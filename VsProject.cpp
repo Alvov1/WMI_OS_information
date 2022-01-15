@@ -18,18 +18,13 @@ constexpr auto SECURITY_CENTER = L"\\\\PC\\root\\SecurityCenter2";
 int __cdecl main(int argc, char** argv)
 {
 	setlocale(LC_ALL, "Russian");
-	HRESULT hres;
-	// Øàã 1: --------------------------------------------------
-	// Èíèöèàëèçàöèÿ COM. ------------------------------------------
-	hres = CoInitializeEx(0, COINIT_MULTITHREADED);
+	HRESULT hres = CoInitializeEx(0, COINIT_MULTITHREADED);
 	if (FAILED(hres))
 	{
 		cout << "Failed to initialize COM library. Error code = 0x"
 			<< hex << hres << endl;
 		return 1;
 	}
-	// Øàã 2: --------------------------------------------------
-	// Óñòàíîâêà óðîâíåé áåçîïàñíîñòè COM --------------------------
 	hres = CoInitializeSecurity(
 		NULL,
 		-1,
@@ -48,8 +43,6 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Øàã 3: ---------------------------------------------------
-	// Ñîçäàíèå ëîêàòîðà WMI -------------------------
 	IWbemLocator* pLoc = NULL;
 	hres = CoCreateInstance(
 		CLSID_WbemLocator,
@@ -64,10 +57,7 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Øàã 4: -----------------------------------------------------
-	// Ïîäêëþ÷åíèå ê WMI ÷åðåç IWbemLocator::ConnectServer
 	IWbemServices* pSvc = NULL;
-	// Ïîëó÷åíèå ðåêâèçèòîâ äîñòóïà ê óäàëåííîìó êîìïüþòåðó
 	CREDUI_INFO cui;
 	bool useToken = false;
 	bool useNTLM = true;
@@ -109,8 +99,6 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Ïîäêëþ÷åíèå ê ïðîñòðàíñòâó èìåí root\cimv2
-	//---------------------------------------------------------
 	hres = pLoc->ConnectServer(
 		_bstr_t(CIMV),
 		_bstr_t(useToken ? NULL : pszName),
@@ -130,8 +118,6 @@ int __cdecl main(int argc, char** argv)
 		return 1;
 	}
 	cout << "# Connected to ROOT\\CIMV2 WMI namespace" << endl;
-	// Øàã 5: --------------------------------------------------
-	// Ñîçäàíèå ñòðóêòóðû COAUTHIDENTITY
 	COAUTHIDENTITY* userAcct = NULL;
 	COAUTHIDENTITY authIdent;
 	if (!useToken)
@@ -158,8 +144,6 @@ int __cdecl main(int argc, char** argv)
 		authIdent.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
 		userAcct = &authIdent;
 	}
-	// Øàã 6: --------------------------------------------------
-	// Óñòàíîâêà çàùèòû ïðîêñè ñåðâåðà ------------------
 	hres = CoSetProxyBlanket(
 		pSvc,
 		RPC_C_AUTHN_DEFAULT,
@@ -179,10 +163,6 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Øàã 7: --------------------------------------------------
-	// Ïîëó÷åíèå äàííûõ ÷åðåç WMI ----
-	// Íàïðèìåð, ïîëó÷èì èìÿ ÎÑ
-
 	IEnumWbemClassObject* pEnumerator = NULL;
 	IWbemClassObject* pclsObj = NULL;
 	ULONG uReturn = 0;
@@ -336,8 +316,6 @@ int __cdecl main(int argc, char** argv)
 	/* ------------------------------------------------------------------------------------------------ */
 	/*								Connecting to the Security Service									*/
 	/* ------------------------------------------------------------------------------------------------ */
-	// Ïîäêëþ÷åíèå ê ïðîñòðàíñòâó èìåí root\SecurityCenter2
-	//---------------------------------------------------------
 	hres = pLoc->ConnectServer(
 		_bstr_t(SECURITY_CENTER),
 		_bstr_t(useToken ? NULL : pszName),
@@ -383,8 +361,6 @@ int __cdecl main(int argc, char** argv)
 		authIdent.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
 		userAcct = &authIdent;
 	}
-	// Øàã 6: --------------------------------------------------
-	// Óñòàíîâêà çàùèòû ïðîêñè ñåðâåðà ------------------
 	hres = CoSetProxyBlanket(
 		pSvc,
 		RPC_C_AUTHN_DEFAULT,
@@ -414,7 +390,7 @@ int __cdecl main(int argc, char** argv)
 	hres = pSvc->ExecQuery(
 		bstr_t("WQL"),
 		bstr_t("Select * from AntiVirusProduct"),
-		/*WBEM_FLAG_FORWARD_ONLY*/ WBEM_FLAG_BIDIRECTIONAL | WBEM_FLAG_RETURN_IMMEDIATELY,
+		WBEM_FLAG_BIDIRECTIONAL | WBEM_FLAG_RETURN_IMMEDIATELY,
 		NULL,
 		&pEnumerator);
 	if (FAILED(hres))
