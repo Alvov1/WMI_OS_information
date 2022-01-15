@@ -11,16 +11,16 @@
 #define UNICODE
 using namespace std;
 
-constexpr auto pcName = L"DESKTOP-36QF4OO";
-constexpr auto CIMV = L"\\\\DESKTOP-36QF4OO\\root\\CIMV2";
-constexpr auto SECURITY_CENTER = L"\\\\DESKTOP-36QF4OO\\root\\SecurityCenter2";
+constexpr auto pcName = L"PC";
+constexpr auto CIMV = L"\\\\PC\\root\\CIMV2";
+constexpr auto SECURITY_CENTER = L"\\\\PC\\root\\SecurityCenter2";
 
 int __cdecl main(int argc, char** argv)
 {
 	setlocale(LC_ALL, "Russian");
 	HRESULT hres;
-	// Шаг 1: --------------------------------------------------
-	// Инициализация COM. ------------------------------------------
+	// ГГ ГЈ 1: --------------------------------------------------
+	// Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§Г Г¶ГЁГї COM. ------------------------------------------
 	hres = CoInitializeEx(0, COINIT_MULTITHREADED);
 	if (FAILED(hres))
 	{
@@ -28,8 +28,8 @@ int __cdecl main(int argc, char** argv)
 			<< hex << hres << endl;
 		return 1;
 	}
-	// Шаг 2: --------------------------------------------------
-	// Установка уровней безопасности COM --------------------------
+	// ГГ ГЈ 2: --------------------------------------------------
+	// Г“Г±ГІГ Г­Г®ГўГЄГ  ГіГ°Г®ГўГ­ГҐГ© ГЎГҐГ§Г®ГЇГ Г±Г­Г®Г±ГІГЁ COM --------------------------
 	hres = CoInitializeSecurity(
 		NULL,
 		-1,
@@ -48,8 +48,8 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Шаг 3: ---------------------------------------------------
-	// Создание локатора WMI -------------------------
+	// ГГ ГЈ 3: ---------------------------------------------------
+	// Г‘Г®Г§Г¤Г Г­ГЁГҐ Г«Г®ГЄГ ГІГ®Г°Г  WMI -------------------------
 	IWbemLocator* pLoc = NULL;
 	hres = CoCreateInstance(
 		CLSID_WbemLocator,
@@ -64,10 +64,10 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Шаг 4: -----------------------------------------------------
-	// Подключение к WMI через IWbemLocator::ConnectServer
+	// ГГ ГЈ 4: -----------------------------------------------------
+	// ГЏГ®Г¤ГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГЄ WMI Г·ГҐГ°ГҐГ§ IWbemLocator::ConnectServer
 	IWbemServices* pSvc = NULL;
-	// Получение реквизитов доступа к удаленному компьютеру
+	// ГЏГ®Г«ГіГ·ГҐГ­ГЁГҐ Г°ГҐГЄГўГЁГ§ГЁГІГ®Гў Г¤Г®Г±ГІГіГЇГ  ГЄ ГіГ¤Г Г«ГҐГ­Г­Г®Г¬Гі ГЄГ®Г¬ГЇГјГѕГІГҐГ°Гі
 	CREDUI_INFO cui;
 	bool useToken = false;
 	bool useNTLM = true;
@@ -109,7 +109,7 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Подключение к пространству имен root\cimv2
+	// ГЏГ®Г¤ГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГЄ ГЇГ°Г®Г±ГІГ°Г Г­Г±ГІГўГі ГЁГ¬ГҐГ­ root\cimv2
 	//---------------------------------------------------------
 	hres = pLoc->ConnectServer(
 		_bstr_t(CIMV),
@@ -130,8 +130,8 @@ int __cdecl main(int argc, char** argv)
 		return 1;
 	}
 	cout << "# Connected to ROOT\\CIMV2 WMI namespace" << endl;
-	// Шаг 5: --------------------------------------------------
-	// Создание структуры COAUTHIDENTITY
+	// ГГ ГЈ 5: --------------------------------------------------
+	// Г‘Г®Г§Г¤Г Г­ГЁГҐ Г±ГІГ°ГіГЄГІГіГ°Г» COAUTHIDENTITY
 	COAUTHIDENTITY* userAcct = NULL;
 	COAUTHIDENTITY authIdent;
 	if (!useToken)
@@ -158,8 +158,8 @@ int __cdecl main(int argc, char** argv)
 		authIdent.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
 		userAcct = &authIdent;
 	}
-	// Шаг 6: --------------------------------------------------
-	// Установка защиты прокси сервера ------------------
+	// ГГ ГЈ 6: --------------------------------------------------
+	// Г“Г±ГІГ Г­Г®ГўГЄГ  Г§Г Г№ГЁГІГ» ГЇГ°Г®ГЄГ±ГЁ Г±ГҐГ°ГўГҐГ°Г  ------------------
 	hres = CoSetProxyBlanket(
 		pSvc,
 		RPC_C_AUTHN_DEFAULT,
@@ -179,9 +179,9 @@ int __cdecl main(int argc, char** argv)
 		CoUninitialize();
 		return 1;
 	}
-	// Шаг 7: --------------------------------------------------
-	// Получение данных через WMI ----
-	// Например, получим имя ОС
+	// ГГ ГЈ 7: --------------------------------------------------
+	// ГЏГ®Г«ГіГ·ГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ Г·ГҐГ°ГҐГ§ WMI ----
+	// ГЌГ ГЇГ°ГЁГ¬ГҐГ°, ГЇГ®Г«ГіГ·ГЁГ¬ ГЁГ¬Гї ГЋГ‘
 
 	IEnumWbemClassObject* pEnumerator = NULL;
 	IWbemClassObject* pclsObj = NULL;
@@ -336,7 +336,7 @@ int __cdecl main(int argc, char** argv)
 	/* ------------------------------------------------------------------------------------------------ */
 	/*								Connecting to the Security Service									*/
 	/* ------------------------------------------------------------------------------------------------ */
-	// Подключение к пространству имен root\SecurityCenter2
+	// ГЏГ®Г¤ГЄГ«ГѕГ·ГҐГ­ГЁГҐ ГЄ ГЇГ°Г®Г±ГІГ°Г Г­Г±ГІГўГі ГЁГ¬ГҐГ­ root\SecurityCenter2
 	//---------------------------------------------------------
 	hres = pLoc->ConnectServer(
 		_bstr_t(SECURITY_CENTER),
@@ -383,8 +383,8 @@ int __cdecl main(int argc, char** argv)
 		authIdent.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
 		userAcct = &authIdent;
 	}
-	// Шаг 6: --------------------------------------------------
-	// Установка защиты прокси сервера ------------------
+	// ГГ ГЈ 6: --------------------------------------------------
+	// Г“Г±ГІГ Г­Г®ГўГЄГ  Г§Г Г№ГЁГІГ» ГЇГ°Г®ГЄГ±ГЁ Г±ГҐГ°ГўГҐГ°Г  ------------------
 	hres = CoSetProxyBlanket(
 		pSvc,
 		RPC_C_AUTHN_DEFAULT,
